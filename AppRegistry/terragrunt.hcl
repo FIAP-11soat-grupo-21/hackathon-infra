@@ -2,7 +2,6 @@ include {
   path = find_in_parent_folders()
 }
 
-
 terraform {
   source = "git::https://github.com/FIAP-11soat-grupo-21/infra-core.git//modules/APP-Registry?ref=main"
 }

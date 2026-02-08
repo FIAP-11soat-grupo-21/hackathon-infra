@@ -1,0 +1,6 @@
+# Ignore Terragrunt temp files
+.terragrunt-cache/
+.terraform.lock.hcl
+terraform.tfstate
+
+.idea

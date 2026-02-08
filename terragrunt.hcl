@@ -1,8 +1,8 @@
 locals {
   environment = "dev"
   project = {
-    name        = "test"
-    description = "Sem descrição"
+    name        = "hackathon"
+    description = "Hackathon project for FIAP"
   }
   common_tags = {
     Environment = local.environment
