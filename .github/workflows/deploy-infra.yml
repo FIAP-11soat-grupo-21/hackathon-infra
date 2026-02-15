@@ -48,19 +48,10 @@ jobs:
       - name: Terragrunt init & plan (run-all)
         env:
           TG_USER_AGENT: github-actions
+        working-directory: src
         run: |
-          # inicializa todos os módulos
           terragrunt init --terragrunt-non-interactive --terragrunt-ignore-dependency-errors
-          # executa plano em todos os módulos (sem aplicar)
           terragrunt run-all plan --terragrunt-non-interactive -no-color || true
-
-      - name: Upload plan logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: terragrunt-plan-logs
-          path: |
-            ./**/terraform.tfstate* || true
 
   terragrunt-apply:
     if: github.event_name == 'workflow_dispatch'
@@ -91,13 +82,14 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terragrunt init
+        working-directory: src
         run: |
           terragrunt init --terragrunt-non-interactive
 
       - name: Terragrunt run-all apply (auto-approve)
+        working-directory: src
         env:
           TG_USER_AGENT: github-actions
         run: |
-          # ATENÇÃO: este passo aplica mudanças na sua conta AWS.
           # Revise o plano via `terragrunt run-all plan` localmente ou pelo job `terragrunt-plan` antes de executar.
           terragrunt run-all apply --terragrunt-non-interactive -auto-approve
