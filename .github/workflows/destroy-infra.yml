@@ -1,0 +1,65 @@
+name: destroy-infra.yml
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'yes' to confirm destructive action"
+        required: true
+        default: "no"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terragrunt-destroy:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'yes'
+    name: Terragrunt Destroy (manual, requires confirm)
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+      GIT_SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.6'
+
+      - name: Install Terragrunt
+        run: |
+          TG_VERSION=0.45.2
+          curl -L -o terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64"
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terragrunt init
+        working-directory: src
+        run: |
+          terragrunt init --terragrunt-non-interactive
+
+      - name: Confirm input
+        if: github.event.inputs.confirm != 'yes'
+        run: |
+          echo "Destructive action not confirmed. Set 'confirm' input to 'yes' to proceed.";
+          exit 1
+
+      - name: Terragrunt run-all destroy (auto-approve)
+        working-directory: src
+        env:
+          TG_USER_AGENT: github-actions
+        run: |
+          # ATTENÇÃO: ação destrutiva. Garantir que 'confirm' foi preenchido com 'yes'.
+          terragrunt run-all destroy --terragrunt-non-interactive -auto-approve
