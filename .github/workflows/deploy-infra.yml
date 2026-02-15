@@ -36,6 +36,11 @@ jobs:
           chmod +x terragrunt
           sudo mv terragrunt /usr/local/bin/
 
+      - name: Setup SSH agent for git
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ env.GIT_SSH_KEY }}
+
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v5.1.0
         with:
@@ -68,6 +73,11 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: '1.5.6'
+
+      - name: Setup SSH agent for git
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ env.GIT_SSH_KEY }}
 
       - name: Install Terragrunt
         run: |
