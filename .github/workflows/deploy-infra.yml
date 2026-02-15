@@ -1,0 +1,99 @@
+name: deploy-infra.yml
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  terragrunt-plan:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    name: Terragrunt Plan (on push to main)
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+      GIT_SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.6'
+
+      - name: Install Terragrunt
+        run: |
+          TG_VERSION=0.45.2
+          curl -L -o terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64"
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          role-to-assume:  ${{ env.AWS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terragrunt init & plan (run-all)
+        env:
+          TG_USER_AGENT: github-actions
+        run: |
+          # inicializa todos os módulos
+          terragrunt init --terragrunt-non-interactive --terragrunt-ignore-dependency-errors
+          # executa plano em todos os módulos (sem aplicar)
+          terragrunt run-all plan --terragrunt-non-interactive -no-color || true
+
+      - name: Upload plan logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terragrunt-plan-logs
+          path: |
+            ./**/terraform.tfstate* || true
+
+  terragrunt-apply:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    name: Terragrunt Apply (manual)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.6'
+
+      - name: Install Terragrunt
+        run: |
+          TG_VERSION=0.45.2
+          curl -L -o terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64"
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.0
+        with:
+          role-to-assume:  ${{ env.AWS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terragrunt init
+        run: |
+          terragrunt init --terragrunt-non-interactive
+
+      - name: Terragrunt run-all apply (auto-approve)
+        env:
+          TG_USER_AGENT: github-actions
+        run: |
+          # ATENÇÃO: este passo aplica mudanças na sua conta AWS.
+          # Revise o plano via `terragrunt run-all plan` localmente ou pelo job `terragrunt-plan` antes de executar.
+          terragrunt run-all apply --terragrunt-non-interactive -auto-approve
