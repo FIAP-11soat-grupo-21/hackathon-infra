@@ -20,9 +20,6 @@ jobs:
       AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
       GIT_SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      # Enable Terragrunt debug logging and write to a file so we can inspect CI output
-      TG_LOG: debug
-      TG_LOG_PATH: .terragrunt.log
 
     steps:
       - name: Checkout
@@ -45,13 +42,6 @@ jobs:
         with:
           ssh-private-key: ${{ env.GIT_SSH_KEY }}
 
-      - name: Add GitHub to known_hosts & force SSH for github.com
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
-
-
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v5.1.0
         with:
@@ -60,28 +50,11 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terragrunt init & plan (run-all)
-        env:
-          TG_USER_AGENT: github-actions
-          # keep the debug env here too for the subshell that runs terragrunt
-          TG_LOG: debug
-          TG_LOG_PATH: .terragrunt.log
         working-directory: src
         run: |
-          # remove any stale terragrunt caches from the workspace to avoid parsing stale/incorrect cached outputs
-          rm -rf ./**/.terragrunt-cache || true
-          terragrunt init --terragrunt-non-interactive
-
-          # Run sequentially (parallelism 1) so modules that depend on other modules' outputs don't try to read outputs
-          # before those modules have been planned/initialized in CI. This avoids parsing non-JSON CLI errors as JSON.
+          terragrunt run-all init --terragrunt-non-interactive
           terragrunt run-all plan --terragrunt-non-interactive --terragrunt-parallelism 1 || true
 
-      - name: Show terragrunt debug log (if present)
-        if: always()
-        working-directory: src
-        run: |
-          echo '--- .terragrunt.log (start) ---'
-          if [ -f .terragrunt.log ]; then cat .terragrunt.log; else echo 'no terragrunt log found'; fi
-          echo '--- .terragrunt.log (end) ---'
 
   terragrunt-apply:
     if: github.event_name == 'workflow_dispatch'
@@ -108,12 +81,6 @@ jobs:
         with:
           ssh-private-key: ${{ env.GIT_SSH_KEY }}
 
-      - name: Add GitHub to known_hosts & force SSH for github.com
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
-
       - name: Install Terragrunt
         run: |
           TG_VERSION=0.45.2
@@ -131,7 +98,7 @@ jobs:
       - name: Terragrunt init
         working-directory: src
         run: |
-          terragrunt init --terragrunt-non-interactive
+          terragrunt run-all init --terragrunt-non-interactive
 
       - name: Terragrunt run-all apply (auto-approve)
         working-directory: src
@@ -140,6 +107,4 @@ jobs:
           TG_LOG: debug
           TG_LOG_PATH: .terragrunt.log
         run: |
-          # Revise o plano via `terragrunt run-all plan` localmente ou pelo job `terragrunt-plan` antes de executar.
-          # Apply sequentially to avoid dependency ordering issues when modules read each other's outputs.
           terragrunt run-all apply --terragrunt-non-interactive -auto-approve --terragrunt-parallelism 1

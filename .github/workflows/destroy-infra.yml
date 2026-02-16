@@ -53,7 +53,7 @@ jobs:
       - name: Terragrunt init
         working-directory: src
         run: |
-          terragrunt init --terragrunt-non-interactive
+          terragrunt run-all init --terragrunt-non-interactive
 
       - name: Confirm input
         if: github.event.inputs.confirm != 'yes'
