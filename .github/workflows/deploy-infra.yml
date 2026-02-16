@@ -48,31 +48,6 @@ jobs:
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
 
-      - name: Git & SSH diagnostics (helps debug module clone failures)
-        run: |
-          echo "=== git version ==="
-          git --version || true
-          echo "=== ssh -v test to github ==="
-          ssh -T -vvv git@github.com -o StrictHostKeyChecking=no || true
-          echo "=== try ls-remote via SSH (module repo) ==="
-          git ls-remote git@github.com:FIAP-11soat-grupo-21/infra-core.git || true
-          echo "=== try ls-remote via HTTPS (module repo) ==="
-          git ls-remote https://github.com/FIAP-11soat-grupo-21/infra-core.git || true
-          echo "=== git url rewrite config ==="
-          git config --global --get-regexp url || true
-
-      - name: Ensure SSH key file and set GIT_SSH_COMMAND
-        run: |
-          mkdir -p ~/.ssh
-          # write the SSH key to a file with strict permissions so we can point GIT_SSH_COMMAND at it
-          echo "$GIT_SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          # add to ssh-agent (in case agent is used) and list keys for diagnostics
-          ssh-add ~/.ssh/id_rsa || true
-          ssh-add -l || true
-          # export GIT_SSH_COMMAND so all git operations use the explicit key and known_hosts file
-          export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_rsa -o UserKnownHostsFile=~/.ssh/known_hosts -o StrictHostKeyChecking=yes -o LogLevel=ERROR'
-          echo "GIT_SSH_COMMAND set to use ~/.ssh/id_rsa"
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v5.1.0
@@ -127,32 +102,6 @@ jobs:
           curl -L -o terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64"
           chmod +x terragrunt
           sudo mv terragrunt /usr/local/bin/
-
-      - name: Git & SSH diagnostics (helps debug module clone failures)
-        run: |
-          echo "=== git version ==="
-          git --version || true
-          echo "=== ssh -v test to github ==="
-          ssh -T -vvv git@github.com -o StrictHostKeyChecking=no || true
-          echo "=== try ls-remote via SSH (module repo) ==="
-          git ls-remote git@github.com:FIAP-11soat-grupo-21/infra-core.git || true
-          echo "=== try ls-remote via HTTPS (module repo) ==="
-          git ls-remote https://github.com/FIAP-11soat-grupo-21/infra-core.git || true
-          echo "=== git url rewrite config ==="
-          git config --global --get-regexp url || true
-
-      - name: Ensure SSH key file and set GIT_SSH_COMMAND
-        run: |
-          mkdir -p ~/.ssh
-          # write the SSH key to a file with strict permissions so we can point GIT_SSH_COMMAND at it
-          echo "$GIT_SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          # add to ssh-agent (in case agent is used) and list keys for diagnostics
-          ssh-add ~/.ssh/id_rsa || true
-          ssh-add -l || true
-          # export GIT_SSH_COMMAND so all git operations use the explicit key and known_hosts file
-          export GIT_SSH_COMMAND='ssh -i ~/.ssh/id_rsa -o UserKnownHostsFile=~/.ssh/known_hosts -o StrictHostKeyChecking=yes -o LogLevel=ERROR'
-          echo "GIT_SSH_COMMAND set to use ~/.ssh/id_rsa"
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v5.1.0
