@@ -17,6 +17,7 @@ env:
   TERRAGRUNT_VERSION: 0.55.1
   TERRAFORM_VERSION: 1.7.0
   AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+  GIT_SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
 jobs:
   validate-confirmation:
