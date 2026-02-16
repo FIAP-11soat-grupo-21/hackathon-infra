@@ -51,9 +51,10 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terragrunt init
-        working-directory: src
-        run: |
-          terragrunt run-all init --terragrunt-non-interactive
+        uses: the-commons-project/terragrunt-github-actions@master
+        with:
+          tf_actions_subcommand: 'run-all init --terragrunt-non-interactive'
+          tf_actions_working_dir: src
 
       - name: Confirm input
         if: github.event.inputs.confirm != 'yes'
@@ -62,9 +63,7 @@ jobs:
           exit 1
 
       - name: Terragrunt run-all destroy (auto-approve)
-        working-directory: src
-        env:
-          TG_USER_AGENT: github-actions
-        run: |
-          # ATTENÇÃO: ação destrutiva. Garantir que 'confirm' foi preenchido com 'yes'.
-          terragrunt run-all destroy --terragrunt-non-interactive -auto-approve
+        uses: the-commons-project/terragrunt-github-actions@master
+        with:
+          tf_actions_subcommand: 'terragrunt run-all destroy --terragrunt-non-interactive -auto-approve'
+          tf_actions_working_dir: src
