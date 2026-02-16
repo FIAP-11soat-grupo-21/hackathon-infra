@@ -8,11 +8,13 @@ terraform {
 
 
 dependency "AppRegistry" {
-  config_path = "../../AppRegistry"
+  config_path  = "../../AppRegistry"
+  skip_outputs = true
 }
 
 dependency "VPC" {
-  config_path = "../VPC"
+  config_path  = "../VPC"
+  skip_outputs = true
 }
 
 dependencies {

@@ -7,11 +7,13 @@ terraform {
 }
 
 dependency "AppRegistry" {
-  config_path = "../../AppRegistry"
+  config_path  = "../../AppRegistry"
+  skip_outputs = true
 }
 
 dependency "sns_order_error" {
-  config_path = "../../SNS/sns_example"
+  config_path  = "../../SNS/sns_example"
+  skip_outputs = true
 }
 
 locals {

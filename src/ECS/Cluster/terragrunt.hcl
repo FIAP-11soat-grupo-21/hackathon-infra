@@ -7,15 +7,18 @@ terraform {
 }
 
 dependency "GHCR_Secret" {
-  config_path = "../../Secrets/GHCR"
+  config_path  = "../../Secrets/GHCR"
+  skip_outputs = true
 }
 
 dependency "VPC" {
-  config_path = "../../Network/VPC"
+  config_path  = "../../Network/VPC"
+  skip_outputs = true
 }
 
 dependency "AppRegistry" {
-  config_path = "../../AppRegistry"
+  config_path  = "../../AppRegistry"
+  skip_outputs = true
 }
 
 locals {

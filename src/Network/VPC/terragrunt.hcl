@@ -7,7 +7,8 @@ terraform {
 }
 
 dependency "AppRegistry" {
-  config_path = "../../AppRegistry"
+  config_path  = "../../AppRegistry"
+  skip_outputs = true
 }
 
 locals {

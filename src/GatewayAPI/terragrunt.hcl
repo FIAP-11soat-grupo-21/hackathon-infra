@@ -7,15 +7,18 @@ terraform {
 }
 
 dependency "AppRegistry" {
-  config_path = "../AppRegistry"
+  config_path  = "../AppRegistry"
+  skip_outputs = true
 }
 
 dependency "InternalALB" {
-  config_path = "../Network/ALB"
+  config_path  = "../Network/ALB"
+  skip_outputs = true
 }
 
 dependency "VPC" {
-  config_path = "../Network/VPC"
+  config_path  = "../Network/VPC"
+  skip_outputs = true
 }
 
 dependencies {
