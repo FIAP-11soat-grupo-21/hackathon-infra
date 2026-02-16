@@ -1,0 +1,117 @@
+name: Deploy Infrastructure with Terragrunt
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Specific module to deploy (leave empty for all)'
+        required: false
+        type: string
+
+env:
+  AWS_REGION: us-east-2
+  TERRAGRUNT_VERSION: 0.55.1
+  TERRAFORM_VERSION: 1.7.0
+
+jobs:
+  deploy:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-Deploy-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Setup Terragrunt
+        run: |
+          wget https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TERRAGRUNT_VERSION }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          terragrunt --version
+
+      - name: Initialize Terragrunt
+        working-directory: ./src
+        run: |
+          if [ -n "${{ inputs.target }}" ]; then
+            echo "Initializing specific module: ${{ inputs.target }}"
+            cd ${{ inputs.target }}
+            terragrunt init
+          else
+            echo "Initializing all modules"
+            terragrunt run-all init --terragrunt-non-interactive
+          fi
+
+      - name: Validate Terragrunt
+        working-directory: ./src
+        run: |
+          if [ -n "${{ inputs.target }}" ]; then
+            cd ${{ inputs.target }}
+            terragrunt validate
+          else
+            terragrunt run-all validate --terragrunt-non-interactive
+          fi
+
+      - name: Plan Infrastructure
+        working-directory: ./src
+        run: |
+          if [ -n "${{ inputs.target }}" ]; then
+            echo "Planning specific module: ${{ inputs.target }}"
+            cd ${{ inputs.target }}
+            terragrunt plan -out=tfplan
+          else
+            echo "Planning all modules"
+            terragrunt run-all plan --terragrunt-non-interactive
+          fi
+
+      - name: Apply Infrastructure
+        working-directory: ./src
+        run: |
+          if [ -n "${{ inputs.target }}" ]; then
+            echo "Applying specific module: ${{ inputs.target }}"
+            cd ${{ inputs.target }}
+            terragrunt apply tfplan
+          else
+            echo "Applying all modules"
+            terragrunt run-all apply --terragrunt-non-interactive
+          fi
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "### ✅ Infrastructure Deployed Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Region:** ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ inputs.target }}" ]; then
+            echo "**Module:** ${{ inputs.target }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Module:** All modules" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Failure Summary
+        if: failure()
+        run: |
+          echo "### ❌ Infrastructure Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please check the logs for more details." >> $GITHUB_STEP_SUMMARY
