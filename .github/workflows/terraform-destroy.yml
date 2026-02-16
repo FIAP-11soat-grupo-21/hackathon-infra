@@ -1,0 +1,124 @@
+name: Destroy Infrastructure with Terragrunt
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Specific module to destroy (leave empty for all)'
+        required: false
+        type: string
+      confirmation:
+        description: 'Type "destroy" to confirm infrastructure destruction'
+        required: true
+        type: string
+
+env:
+  AWS_REGION: us-east-2
+  TERRAGRUNT_VERSION: 0.55.1
+  TERRAFORM_VERSION: 1.7.0
+
+jobs:
+  validate-confirmation:
+    name: Validate Destruction Confirmation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check confirmation
+        run: |
+          if [ "${{ inputs.confirmation }}" != "destroy" ]; then
+            echo "❌ Confirmation failed. You must type 'destroy' to proceed."
+            exit 1
+          fi
+          echo "✅ Confirmation validated"
+
+  destroy:
+    name: Destroy Infrastructure
+    runs-on: ubuntu-latest
+    needs: validate-confirmation
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-Destroy-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Setup Terragrunt
+        run: |
+          wget https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TERRAGRUNT_VERSION }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          terragrunt --version
+
+      - name: Initialize Terragrunt
+        working-directory: ./src
+        run: |
+          if [ -n "${{ inputs.target }}" ]; then
+            echo "Initializing specific module: ${{ inputs.target }}"
+            cd ${{ inputs.target }}
+            terragrunt init
+          else
+            echo "Initializing all modules"
+            terragrunt run-all init --terragrunt-non-interactive
+          fi
+
+      - name: Plan Destruction
+        working-directory: ./src
+        run: |
+          if [ -n "${{ inputs.target }}" ]; then
+            echo "Planning destruction for specific module: ${{ inputs.target }}"
+            cd ${{ inputs.target }}
+            terragrunt plan -destroy
+          else
+            echo "Planning destruction for all modules"
+            terragrunt run-all plan -destroy --terragrunt-non-interactive
+          fi
+
+      - name: Destroy Infrastructure
+        working-directory: ./src
+        run: |
+          if [ -n "${{ inputs.target }}" ]; then
+            echo "🔥 Destroying specific module: ${{ inputs.target }}"
+            cd ${{ inputs.target }}
+            terragrunt destroy --terragrunt-non-interactive
+          else
+            echo "🔥 Destroying all modules"
+            terragrunt run-all destroy --terragrunt-non-interactive
+          fi
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "### ✅ Infrastructure Destroyed Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Region:** ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ inputs.target }}" ]; then
+            echo "**Module:** ${{ inputs.target }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Module:** All modules" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Failure Summary
+        if: failure()
+        run: |
+          echo "### ❌ Infrastructure Destruction Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please check the logs for more details." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Some resources may still exist in AWS. Manual cleanup may be required." >> $GITHUB_STEP_SUMMARY
