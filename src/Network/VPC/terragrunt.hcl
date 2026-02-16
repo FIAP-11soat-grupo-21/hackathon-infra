@@ -7,8 +7,12 @@ terraform {
 }
 
 dependency "AppRegistry" {
-  config_path  = "../../AppRegistry"
-  skip_outputs = true
+  config_path = "../../AppRegistry"
+
+  mock_outputs = {
+    app_registry_application_tag = {}
+  }
+  mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
 }
 
 locals {
