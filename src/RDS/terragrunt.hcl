@@ -28,7 +28,7 @@ inputs = {
   db_engine            = try(local.parent.locals.db_engine, "postgres")
   db_engine_version    = try(local.parent.locals.db_engine_version, "13")
   db_instance_class    = try(local.parent.locals.db_instance_class, "db.t3.micro")
-  db_username          = try(local.parent.locals.db_username, "admin")
+  db_username          = try(local.parent.locals.db_username, "postgres")
 
   private_subnets = dependency.VPC.outputs.private_subnets
   vpc_id          = dependency.VPC.outputs.vpc_id
