@@ -16,6 +16,7 @@ env:
   AWS_REGION: us-east-2
   TERRAGRUNT_VERSION: 0.55.1
   TERRAFORM_VERSION: 1.7.0
+  AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
 
 jobs:
   validate-confirmation:
@@ -47,7 +48,7 @@ jobs:
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: GitHubActions-Destroy-${{ github.run_id }}
 
