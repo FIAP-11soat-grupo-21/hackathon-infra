@@ -3,7 +3,7 @@ include {
 }
 
 terraform {
-  source = "git::https://github.com/FIAP-11soat-grupo-21/infra-core.git//modules/SM?ref=main"
+  source = "git::git@github.com:FIAP-11soat-grupo-21/infra-core.git//modules/SM?ref=main"
 }
 
 dependency "AppRegistry" {

@@ -3,7 +3,7 @@ include {
 }
 
 terraform {
-  source = "git::https://github.com/FIAP-11soat-grupo-21/infra-core.git//modules/ECS-Cluster?ref=main"
+  source = "git::git@github.com:FIAP-11soat-grupo-21/infra-core.git//modules/ECS-Cluster?ref=main"
 }
 
 dependency "GHCR_Secret" {
@@ -29,4 +29,3 @@ inputs = {
   private_subnet_ids = dependency["VPC"].outputs.private_subnets
   project_common_tags = merge(local.parent.locals.common_tags, try(dependency.AppRegistry.outputs.app_registry_application_tag, {}))
 }
-

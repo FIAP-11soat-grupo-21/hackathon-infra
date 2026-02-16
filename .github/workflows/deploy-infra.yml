@@ -63,7 +63,7 @@ jobs:
           rm -rf ./**/.terragrunt-cache || true
           terragrunt init --terragrunt-non-interactive
 
-          terragrunt run-all plan --terragrunt-non-interactive --no-color || true
+          terragrunt run-all plan --terragrunt-non-interactive || true
 
   terragrunt-apply:
     if: github.event_name == 'workflow_dispatch'
