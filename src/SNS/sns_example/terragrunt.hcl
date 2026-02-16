@@ -6,7 +6,7 @@ terraform {
   source = "git::https://github.com/FIAP-11soat-grupo-21/infra-core.git//modules/SNS?ref=main"
 }
 
-dependency "application_registry" {
+dependency "AppRegistry" {
   config_path = "../../AppRegistry"
 }
 
