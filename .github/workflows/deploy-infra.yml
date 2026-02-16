@@ -41,6 +41,12 @@ jobs:
         with:
           ssh-private-key: ${{ env.GIT_SSH_KEY }}
 
+      - name: Add GitHub to known_hosts & force SSH for github.com
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
+
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v5.1.0
         with:
@@ -56,27 +62,6 @@ jobs:
           # remove any stale terragrunt caches from the workspace to avoid parsing stale/incorrect cached outputs
           rm -rf ./**/.terragrunt-cache || true
           terragrunt init --terragrunt-non-interactive --terragrunt-ignore-dependency-errors
-
-          # Diagnostic: capture AppRegistry outputs to detect non-JSON stdout that breaks parsing
-          echo "== AppRegistry outputs diagnostic =="
-          pushd AppRegistry
-          terragrunt init --terragrunt-non-interactive || true
-          terragrunt output -json > /tmp/appregistry-output.txt || true
-          echo "---- raw appregistry-output (first 200 lines) ----"
-          sed -n '1,200p' /tmp/appregistry-output.txt || true
-          echo "---- try to parse with python ----"
-          python3 - <<'PY'
-          import json
-          s = open('/tmp/appregistry-output.txt').read()
-          try:
-            json.loads(s)
-            print('PARSED JSON OK')
-          except Exception as e:
-            print('JSON parse error:', e)
-            print('\nRAW OUTPUT (first 800 chars):')
-            print(s[:800])
-          PY
-          popd
 
           terragrunt run-all plan --terragrunt-non-interactive --no-color || true
 
@@ -102,6 +87,12 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ env.GIT_SSH_KEY }}
+
+      - name: Add GitHub to known_hosts & force SSH for github.com
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
 
       - name: Install Terragrunt
         run: |
