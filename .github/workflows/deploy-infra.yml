@@ -61,7 +61,7 @@ jobs:
         run: |
           # remove any stale terragrunt caches from the workspace to avoid parsing stale/incorrect cached outputs
           rm -rf ./**/.terragrunt-cache || true
-          terragrunt init --terragrunt-non-interactive --terragrunt-ignore-dependency-errors
+          terragrunt init --terragrunt-non-interactive
 
           terragrunt run-all plan --terragrunt-non-interactive --no-color || true
 
