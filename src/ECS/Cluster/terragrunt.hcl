@@ -13,6 +13,7 @@ dependency "GHCR_Secret" {
     secret_arn = "arn:aws:secretsmanager:us-east-2:123456789012:secret:mock-secret"
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
+  skip_outputs = false
 }
 
 dependency "VPC" {
@@ -23,6 +24,7 @@ dependency "VPC" {
     private_subnets = ["subnet-mock-1", "subnet-mock-2"]
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
+  skip_outputs = false
 }
 
 dependency "AppRegistry" {
@@ -32,6 +34,7 @@ dependency "AppRegistry" {
     app_registry_application_tag = {}
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
+  skip_outputs = false
 }
 
 locals {

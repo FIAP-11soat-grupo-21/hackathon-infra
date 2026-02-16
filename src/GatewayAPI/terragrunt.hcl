@@ -13,6 +13,7 @@ dependency "AppRegistry" {
     app_registry_application_tag = {}
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
+  skip_outputs = false
 }
 
 dependency "InternalALB" {
@@ -22,6 +23,7 @@ dependency "InternalALB" {
     alb_security_group_id = "sg-mock"
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
+  skip_outputs = false
 }
 
 dependency "VPC" {
@@ -32,6 +34,7 @@ dependency "VPC" {
     private_subnets = ["subnet-mock-1", "subnet-mock-2"]
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
+  skip_outputs = false
 }
 
 dependencies {

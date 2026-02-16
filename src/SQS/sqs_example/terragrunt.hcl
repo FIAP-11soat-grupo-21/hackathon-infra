@@ -13,6 +13,7 @@ dependency "AppRegistry" {
     app_registry_application_tag = {}
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
+  skip_outputs = false
 }
 
 dependency "sns_order_error" {
@@ -22,6 +23,7 @@ dependency "sns_order_error" {
     topic_arn = "arn:aws:sns:us-east-2:123456789012:mock-topic"
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
+  skip_outputs = false
 }
 
 locals {
