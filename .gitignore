@@ -1,6 +1,37 @@
-# Ignore Terragrunt temp files
+# Terragrunt cache directories
 .terragrunt-cache/
-.terraform.lock.hcl
-terraform.tfstate
 
-.idea
+# Terraform files
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform variable files (may contain sensitive data)
+*.tfvars
+*.tfvars.json
+
+# Backend configuration
+backend.tf
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -17,6 +17,8 @@ env:
   TERRAFORM_VERSION: 1.7.0
   AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
   GIT_SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+  GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
 
 jobs:
   deploy:
@@ -91,6 +93,12 @@ jobs:
             echo "Modules will be applied in dependency order during apply step"
             terragrunt run-all plan --terragrunt-non-interactive || echo "Plan completed with warnings (expected on first deploy)"
           fi
+
+      - name: Load tfvars
+        working-directory: src
+        run: |
+          sed -ie "s|GHCR_USERNAME|${{ env.GHCR_USERNAME }}|g" src/Secrets/GHCR/terragrunt.hcl
+          sed -ie "s|GHCR_TOKEN|${{ env.GHCR_TOKEN }}|g" src/Secrets/GHCR/terragrunt.hcl
 
       - name: Apply Infrastructure
         working-directory: ./src

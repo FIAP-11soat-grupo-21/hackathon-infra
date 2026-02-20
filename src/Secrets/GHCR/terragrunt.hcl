@@ -21,8 +21,8 @@ locals {
   project_name   = local.parent.locals.project.name
   secret_name    = "sa-${local.project_name}-ghcr"
   secret_content = {
-    GHCR_USERNAME = "your-ghcr-username"
-    GHCR_TOKEN    = "your-ghcr-token"
+    "username" : "GHCR_USERNAME",
+    "password" : "GHCR_TOKEN"
   }
 }
 
