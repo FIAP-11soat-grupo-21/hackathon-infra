@@ -3,7 +3,7 @@ include {
 }
 
 terraform {
-  source = "git::git@github.com:FIAP-11soat-grupo-21/infra-core.git//modules/Cognito?ref=main"
+  source = "git::git@github.com:FIAP-11soat-grupo-21/infra-core.git//modules/cognito?ref=main"
 }
 
 dependency "AppRegistry" {
