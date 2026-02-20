@@ -97,8 +97,8 @@ jobs:
       - name: Load tfvars
         working-directory: src
         run: |
-          sed -ie "s|GHCR_USERNAME|${{ env.GHCR_USERNAME }}|g" src/Secrets/GHCR/terragrunt.hcl
-          sed -ie "s|GHCR_TOKEN|${{ env.GHCR_TOKEN }}|g" src/Secrets/GHCR/terragrunt.hcl
+          sed -ie "s|GHCR_USERNAME|${{ env.GHCR_USERNAME }}|g" Secrets/GHCR/terragrunt.hcl
+          sed -ie "s|GHCR_TOKEN|${{ env.GHCR_TOKEN }}|g" Secrets/GHCR/terragrunt.hcl
 
       - name: Apply Infrastructure
         working-directory: ./src
