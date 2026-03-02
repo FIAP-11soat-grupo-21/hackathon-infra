@@ -22,7 +22,7 @@ locals {
 }
 
 inputs = {
-  bucket_name = "fiap_hackathon_lambda_content_44573"
+  bucket_name = "fiap-hackathon-lambda-content-44573"
   enable_versioning = true
   enable_encryption = true
   kms_key_id = ""
