@@ -79,8 +79,8 @@ jobs:
             cd ${{ inputs.target }}
             terragrunt init
           else
-            echo "Initializing all modules"
-            terragrunt run-all init --terragrunt-non-interactive
+            echo "Initializing all modules (excluding S3)"
+            terragrunt run-all init --terragrunt-non-interactive --terragrunt-exclude-dir S3
           fi
 
       - name: Plan Destruction
@@ -91,8 +91,8 @@ jobs:
             cd ${{ inputs.target }}
             terragrunt plan -destroy
           else
-            echo "Planning destruction for all modules"
-            terragrunt run-all plan -destroy --terragrunt-non-interactive
+            echo "Planning destruction for all modules (excluding S3)"
+            terragrunt run-all plan -destroy --terragrunt-non-interactive --terragrunt-exclude-dir S3
           fi
 
       - name: Destroy Infrastructure
@@ -103,8 +103,8 @@ jobs:
             cd ${{ inputs.target }}
             terragrunt destroy --terragrunt-non-interactive
           else
-            echo "🔥 Destroying all modules"
-            terragrunt run-all destroy --terragrunt-non-interactive
+            echo "🔥 Destroying all modules (excluding S3 - preserved)"
+            terragrunt run-all destroy --terragrunt-non-interactive --terragrunt-exclude-dir S3
           fi
 
       - name: Summary

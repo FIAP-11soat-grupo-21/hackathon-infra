@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Specific module to deploy (leave empty for all)'
+        description: "Specific module to deploy (leave empty for all)"
         required: false
         type: string
 
@@ -66,8 +66,8 @@ jobs:
             cd ${{ inputs.target }}
             terragrunt init
           else
-            echo "Initializing all modules"
-            terragrunt run-all init --terragrunt-non-interactive
+            echo "Initializing all modules (excluding S3)"
+            terragrunt run-all init --terragrunt-non-interactive --terragrunt-exclude-dir S3
           fi
 
       - name: Validate Terragrunt
@@ -77,7 +77,7 @@ jobs:
             cd ${{ inputs.target }}
             terragrunt validate
           else
-            terragrunt run-all validate --terragrunt-non-interactive
+            terragrunt run-all validate --terragrunt-non-interactive --terragrunt-exclude-dir S3
           fi
 
       - name: Plan Infrastructure
@@ -88,10 +88,10 @@ jobs:
             cd ${{ inputs.target }}
             terragrunt plan
           else
-            echo "Planning all modules (order preview)"
+            echo "Planning all modules (order preview, excluding S3)"
             echo "Note: Full plan with run-all might fail on first deploy"
             echo "Modules will be applied in dependency order during apply step"
-            terragrunt run-all plan --terragrunt-non-interactive || echo "Plan completed with warnings (expected on first deploy)"
+            terragrunt run-all plan --terragrunt-non-interactive --terragrunt-exclude-dir S3 || echo "Plan completed with warnings (expected on first deploy)"
           fi
 
       - name: Load tfvars
@@ -108,8 +108,8 @@ jobs:
             cd ${{ inputs.target }}
             terragrunt apply tfplan
           else
-            echo "Applying all modules"
-            terragrunt run-all apply --terragrunt-non-interactive
+            echo "Applying all modules (excluding S3 - managed separately)"
+            terragrunt run-all apply --terragrunt-non-interactive 
           fi
 
       - name: Summary

@@ -1,3 +1,7 @@
+# Este módulo S3 é gerenciado separadamente dos demais
+# Será ignorado nos comandos run-all para evitar erros se o bucket já existir
+# Para aplicar/destruir este módulo, execute diretamente: terragrunt apply/destroy neste diretório
+
 include {
   path = find_in_parent_folders()
 }
