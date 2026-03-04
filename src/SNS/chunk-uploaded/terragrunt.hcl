@@ -34,7 +34,7 @@ locals {
 
 inputs = {
   topic = {
-    name = "SNS_example"
+    name = "chunk-uploaded"
   }
   project_common_tags = merge(local.parent.locals.common_tags, try(dependency.AppRegistry.outputs.app_registry_application_tag, {}))
 }
