@@ -21,7 +21,7 @@ dependency "AppRegistry" {
 }
 
 dependency "notification_topic" {
-  config_path = "../SNS/all-chunks-processed"
+  config_path = "../../SNS/all-chunks-processed"
 
     mock_outputs = {
         notification_topic_arn = "sample-topic-arn"
