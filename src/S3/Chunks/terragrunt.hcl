@@ -42,7 +42,9 @@ inputs = {
 
   enable_notifications = true
   notification_topic_arn = dependency.sns_topic_chunk_uploaded.outputs.topic_arn
-  notification_events = ["s3:ObjectCreated:*"]
+  notification_events = ["s3:ObjectCreated:Put", "s3:ObjectCreated:CompleteMultipartUpload"]
+  notification_filter_prefix = "/videos"
+  notification_filter_suffix = ".mp4"
 
   kms_key_id = ""
   project_common_tags = merge(local.parent.locals.common_tags, try(dependency.AppRegistry.outputs.app_registry_application_tag, {}))
