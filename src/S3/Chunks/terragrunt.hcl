@@ -20,14 +20,14 @@ dependency "AppRegistry" {
   skip_outputs = false
 }
 
-dependency "notification_topic" {
-  config_path = "../../SNS/all-chunks-processed"
+dependency "sns_topic_chunk_uploaded" {
+  config_path = "../../SNS/chunk-uploaded"
 
-    mock_outputs = {
-        notification_topic_arn = "sample-topic-arn"
-    }
-    mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
-    skip_outputs = false
+  mock_outputs = {
+    topic_arn = "arn:aws:sns:us-east-2:123456789012:mock-topic"
+  }
+  mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
+  skip_outputs = false
 }
 
 locals {
@@ -36,12 +36,12 @@ locals {
 }
 
 inputs = {
-  bucket_name = "fiap-hackathon-lambda-content-44573"
+  bucket_name = "chunk-bucket"
   enable_versioning = true
   enable_encryption = true
 
   enable_notifications = true
-  notification_topic_arn = dependency.notification_topic.outputs.topic_arn
+  notification_topic_arn = dependency.sns_topic_chunk_uploaded.outputs.topic_arn
   notification_events = ["s3:ObjectCreated:*"]
 
   kms_key_id = ""
