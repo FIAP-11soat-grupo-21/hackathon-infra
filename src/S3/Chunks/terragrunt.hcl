@@ -36,7 +36,7 @@ locals {
 }
 
 inputs = {
-  bucket_name = "chunk-bucket"
+  bucket_name = "fiap-hackathon-chunk-bucket-54351"
   enable_versioning = true
   enable_encryption = true
 
