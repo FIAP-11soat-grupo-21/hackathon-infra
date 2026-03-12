@@ -47,8 +47,7 @@ inputs = {
   delay_seconds              = 0
   message_retention_seconds  = 86400
   receive_wait_time_seconds  = 10
-  visibility_timeout_seconds = 30
-  sns_topic_arns             = [dependency.sns_topic_chunk_uploaded.outputs.topic_arn]
+  visibility_timeout_seconds = 300
 
   allow_s3_publish = true
   source_bucket_arn = dependency.s3_chunk_bucket.outputs.bucket_arn
